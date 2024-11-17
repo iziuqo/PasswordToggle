@@ -11,14 +11,19 @@
  * @param {string} config.activeClass - CSS class for active state (default: 'password-toggle-active')
  * @param {string} config.eyeOpenIcon - SVG for visible password (default: eye icon)
  * @param {string} config.eyeClosedIcon - SVG for hidden password (default: eye-off icon)
+ * @param {string} config.wrapperClass - CSS class for the wrapper (default: 'password-toggle-wrapper')
+ * @param {string} config.tooltipClass - CSS class for the tooltip (default: 'password-toggle-tooltip')
  */
 class PasswordToggle {
   constructor(config = {}) {
+    // Platform detection
     this.isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     
+    // Default SVG icons
     const defaultEyeOpen = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     const defaultEyeClosed = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
+    // Configuration with defaults
     this.config = {
       keyCombo: config.keyCombo || (this.isMac ? 'cmd+8' : 'ctrl+8'),
       toggleAttribute: config.toggleAttribute || 'data-pw-toggle',
@@ -27,15 +32,26 @@ class PasswordToggle {
       toggleButtonClass: config.toggleButtonClass || 'password-toggle-btn',
       activeClass: config.activeClass || 'password-toggle-active',
       eyeOpenIcon: config.eyeOpenIcon || defaultEyeOpen,
-      eyeClosedIcon: config.eyeClosedIcon || defaultEyeClosed
+      eyeClosedIcon: config.eyeClosedIcon || defaultEyeClosed,
+      wrapperClass: config.wrapperClass || 'password-toggle-wrapper',
+      tooltipClass: config.tooltipClass || 'password-toggle-tooltip'
     };
     
+    // Parse key combination
     this.keyConfig = this.parseKeyCombo(this.config.keyCombo);
+
+    // Bind event handlers
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.handleButtonClick = this.handleButtonClick.bind(this);
+
+    // Initialize
     this.init();
   }
 
+  /**
+   * Parse key combination string into modifier and key
+   * @private
+   */
   parseKeyCombo(keyCombo) {
     const parts = keyCombo.toLowerCase().split('+');
     if (parts.length !== 2) {
@@ -62,6 +78,10 @@ class PasswordToggle {
     return { modifier: modifierKey, key };
   }
 
+  /**
+   * Create toggle button element
+   * @private
+   */
   createToggleButton() {
     const button = document.createElement('button');
     button.type = 'button';
@@ -71,24 +91,38 @@ class PasswordToggle {
     return button;
   }
 
+  /**
+   * Create tooltip element
+   * @private
+   */
   createTooltip(field) {
     const tooltip = document.createElement('div');
     const modifierDisplay = this.isMac ? '⌘' : 'Ctrl';
-    tooltip.className = 'password-toggle-tooltip';
+    tooltip.className = this.config.tooltipClass;
     tooltip.textContent = `Show password (${modifierDisplay} + 8)`;
     field.parentElement.appendChild(tooltip);
   }
 
+  /**
+   * Initialize the library
+   * @private
+   */
   init() {
     document.addEventListener('keydown', this.handleKeyPress);
     this.setupPasswordFields();
-    
-    // Add default styles
+    this.injectStyles();
+  }
+
+  /**
+   * Inject required styles
+   * @private
+   */
+  injectStyles() {
     if (!document.getElementById('password-toggle-styles')) {
       const styles = document.createElement('style');
       styles.id = 'password-toggle-styles';
       styles.textContent = `
-        .password-toggle-wrapper {
+        .${this.config.wrapperClass} {
           position: relative;
           display: inline-block;
         }
@@ -104,6 +138,8 @@ class PasswordToggle {
           color: #666;
           display: flex;
           align-items: center;
+          z-index: 1;
+          transition: color 0.2s;
         }
         .${this.config.toggleButtonClass}:hover {
           color: #333;
@@ -111,7 +147,7 @@ class PasswordToggle {
         .${this.config.toggleButtonClass}.${this.config.activeClass} {
           color: #000;
         }
-        .password-toggle-tooltip {
+        .${this.config.tooltipClass} {
           position: absolute;
           top: -30px;
           right: 0;
@@ -123,8 +159,10 @@ class PasswordToggle {
           pointer-events: none;
           opacity: 0;
           transition: opacity 0.2s;
+          z-index: 2;
+          white-space: nowrap;
         }
-        .password-toggle-wrapper:hover .password-toggle-tooltip {
+        .${this.config.wrapperClass}:hover .${this.config.tooltipClass} {
           opacity: 1;
         }
       `;
@@ -132,6 +170,10 @@ class PasswordToggle {
     }
   }
 
+  /**
+   * Setup password fields with wrapper and button
+   * @private
+   */
   setupPasswordFields() {
     const fields = document.querySelectorAll(`[${this.config.toggleAttribute}]`);
     fields.forEach(field => {
@@ -140,24 +182,30 @@ class PasswordToggle {
         return;
       }
 
-      // Wrap field if not already wrapped
-      if (!field.parentElement.classList.contains('password-toggle-wrapper')) {
+      // Create wrapper if not exists
+      if (!field.parentElement.classList.contains(this.config.wrapperClass)) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'password-toggle-wrapper';
+        wrapper.className = this.config.wrapperClass;
         field.parentNode.insertBefore(wrapper, field);
         wrapper.appendChild(field);
 
+        // Add toggle button
         if (this.config.showToggleButton) {
           const button = this.createToggleButton();
           wrapper.appendChild(button);
           button.addEventListener('click', (e) => this.handleButtonClick(e, field));
         }
 
+        // Add tooltip
         this.createTooltip(field);
       }
     });
   }
 
+  /**
+   * Handle button click event
+   * @private
+   */
   handleButtonClick(event, field) {
     event.preventDefault();
     if (this.config.toggleAllFields) {
@@ -167,6 +215,10 @@ class PasswordToggle {
     }
   }
 
+  /**
+   * Handle keypress event
+   * @private
+   */
   handleKeyPress(event) {
     if (event[this.keyConfig.modifier] && event.key === this.keyConfig.key) {
       event.preventDefault();
@@ -181,6 +233,10 @@ class PasswordToggle {
     }
   }
 
+  /**
+   * Toggle password field visibility
+   * @private
+   */
   togglePasswordVisibility(specificField = null) {
     const fields = specificField ? [specificField] : 
       document.querySelectorAll(`[${this.config.toggleAttribute}]`);
@@ -189,7 +245,7 @@ class PasswordToggle {
       const wasPassword = field.type === 'password';
       field.type = wasPassword ? 'text' : 'password';
       
-      // Update button icon if exists
+      // Update button icon and state
       const button = field.parentElement.querySelector(`.${this.config.toggleButtonClass}`);
       if (button) {
         button.innerHTML = wasPassword ? this.config.eyeOpenIcon : this.config.eyeClosedIcon;
@@ -208,22 +264,67 @@ class PasswordToggle {
     });
   }
 
-  // Public methods for dynamic configuration
+  /**
+   * Set toggle mode (all fields or focused only)
+   * @public
+   */
   setMode(mode) {
     this.config.toggleAllFields = mode === 'all';
     return this;
   }
 
+  /**
+   * Set keyboard shortcut
+   * @public
+   */
   setKeyCombo(keyCombo) {
     this.config.keyCombo = keyCombo;
     this.keyConfig = this.parseKeyCombo(keyCombo);
     return this;
   }
 
+  /**
+   * Update configuration
+   * @public
+   */
+  updateConfig(newConfig) {
+    Object.assign(this.config, newConfig);
+    this.keyConfig = this.parseKeyCombo(this.config.keyCombo);
+    return this;
+  }
+
+  /**
+   * Refresh all password fields
+   * @public
+   */
+  refresh() {
+    this.setupPasswordFields();
+    return this;
+  }
+
+  /**
+   * Clean up event listeners and DOM changes
+   * @public
+   */
   destroy() {
     document.removeEventListener('keydown', this.handleKeyPress);
     document.querySelectorAll(`.${this.config.toggleButtonClass}`).forEach(button => {
       button.removeEventListener('click', this.handleButtonClick);
+    });
+
+    // Remove injected styles
+    const styles = document.getElementById('password-toggle-styles');
+    if (styles) {
+      styles.remove();
+    }
+
+    // Unwrap fields
+    document.querySelectorAll(`.${this.config.wrapperClass}`).forEach(wrapper => {
+      const field = wrapper.querySelector(`[${this.config.toggleAttribute}]`);
+      if (field) {
+        wrapper.parentNode.insertBefore(field, wrapper);
+        wrapper.remove();
+      }
     });
   }
 }
