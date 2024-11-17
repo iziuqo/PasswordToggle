@@ -17,8 +17,7 @@ class PasswordToggle {
     };
     
     // Parse key combination
-    const [modifier, key] = this.parseKeyCombo(this.config.keyCombo);
-    this.keyConfig = { modifier, key };
+    this.keyConfig = this.parseKeyCombo(this.config.keyCombo);
     
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.init();
@@ -30,7 +29,13 @@ class PasswordToggle {
    * @returns {Object} Parsed modifier and key
    */
   parseKeyCombo(keyCombo) {
-    const [modifier, key] = keyCombo.toLowerCase().split('+');
+    const parts = keyCombo.toLowerCase().split('+');
+    if (parts.length !== 2) {
+      throw new Error('Invalid key combination format. Use format like "ctrl+8" or "cmd+8"');
+    }
+    
+    const modifier = parts[0];
+    const key = parts[1];
     
     // Map modifiers to their event properties
     const modifierMap = {
@@ -42,8 +47,13 @@ class PasswordToggle {
       shift: 'shiftKey'
     };
 
+    const modifierKey = modifierMap[modifier];
+    if (!modifierKey) {
+      throw new Error(`Unsupported modifier key: ${modifier}`);
+    }
+
     return {
-      modifier: modifierMap[modifier] || 'ctrlKey',
+      modifier: modifierKey,
       key: key
     };
   }
@@ -51,6 +61,13 @@ class PasswordToggle {
   init() {
     document.addEventListener('keydown', this.handleKeyPress);
     this.setupPasswordFields();
+    
+    // Log initialization success
+    console.log('PasswordToggle initialized:', {
+      platform: this.isMac ? 'Mac' : 'Windows/Linux',
+      keyCombo: this.config.keyCombo,
+      fields: document.querySelectorAll(`[${this.config.toggleAttribute}]`).length
+    });
   }
 
   setupPasswordFields() {
