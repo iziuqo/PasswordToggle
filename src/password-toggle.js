@@ -5,29 +5,37 @@
  * @param {Object} config - Configuration options
  * @param {string} config.keyCombo - Key combination (default: 'ctrl+8' on Windows/Linux, 'cmd+8' on Mac)
  * @param {string} config.toggleAttribute - Data attribute to identify password fields (default: 'data-pw-toggle')
+ * @param {boolean} config.toggleAllFields - Whether to toggle all fields or only focused field (default: false)
+ * @param {boolean} config.showToggleButton - Whether to show the toggle button (default: true)
+ * @param {string} config.toggleButtonClass - CSS class for the toggle button (default: 'password-toggle-btn')
+ * @param {string} config.activeClass - CSS class for active state (default: 'password-toggle-active')
+ * @param {string} config.eyeOpenIcon - SVG for visible password (default: eye icon)
+ * @param {string} config.eyeClosedIcon - SVG for hidden password (default: eye-off icon)
  */
 class PasswordToggle {
   constructor(config = {}) {
-    // Detect platform
     this.isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     
+    const defaultEyeOpen = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    const defaultEyeClosed = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
     this.config = {
       keyCombo: config.keyCombo || (this.isMac ? 'cmd+8' : 'ctrl+8'),
-      toggleAttribute: config.toggleAttribute || 'data-pw-toggle'
+      toggleAttribute: config.toggleAttribute || 'data-pw-toggle',
+      toggleAllFields: config.toggleAllFields || false,
+      showToggleButton: config.showToggleButton !== false,
+      toggleButtonClass: config.toggleButtonClass || 'password-toggle-btn',
+      activeClass: config.activeClass || 'password-toggle-active',
+      eyeOpenIcon: config.eyeOpenIcon || defaultEyeOpen,
+      eyeClosedIcon: config.eyeClosedIcon || defaultEyeClosed
     };
     
-    // Parse key combination
     this.keyConfig = this.parseKeyCombo(this.config.keyCombo);
-    
     this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleButtonClick = this.handleButtonClick.bind(this);
     this.init();
   }
 
-  /**
-   * Parse key combination string into modifier and key
-   * @param {string} keyCombo - Key combination string (e.g., 'ctrl+8', 'cmd+8')
-   * @returns {Object} Parsed modifier and key
-   */
   parseKeyCombo(keyCombo) {
     const parts = keyCombo.toLowerCase().split('+');
     if (parts.length !== 2) {
@@ -37,7 +45,6 @@ class PasswordToggle {
     const modifier = parts[0];
     const key = parts[1];
     
-    // Map modifiers to their event properties
     const modifierMap = {
       ctrl: 'ctrlKey',
       cmd: 'metaKey',
@@ -52,22 +59,77 @@ class PasswordToggle {
       throw new Error(`Unsupported modifier key: ${modifier}`);
     }
 
-    return {
-      modifier: modifierKey,
-      key: key
-    };
+    return { modifier: modifierKey, key };
+  }
+
+  createToggleButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = this.config.toggleButtonClass;
+    button.innerHTML = this.config.eyeClosedIcon;
+    button.setAttribute('aria-label', 'Toggle password visibility');
+    return button;
+  }
+
+  createTooltip(field) {
+    const tooltip = document.createElement('div');
+    const modifierDisplay = this.isMac ? '⌘' : 'Ctrl';
+    tooltip.className = 'password-toggle-tooltip';
+    tooltip.textContent = `Show password (${modifierDisplay} + 8)`;
+    field.parentElement.appendChild(tooltip);
   }
 
   init() {
     document.addEventListener('keydown', this.handleKeyPress);
     this.setupPasswordFields();
     
-    // Log initialization success
-    console.log('PasswordToggle initialized:', {
-      platform: this.isMac ? 'Mac' : 'Windows/Linux',
-      keyCombo: this.config.keyCombo,
-      fields: document.querySelectorAll(`[${this.config.toggleAttribute}]`).length
-    });
+    // Add default styles
+    if (!document.getElementById('password-toggle-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'password-toggle-styles';
+      styles.textContent = `
+        .password-toggle-wrapper {
+          position: relative;
+          display: inline-block;
+        }
+        .${this.config.toggleButtonClass} {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: none;
+          background: none;
+          cursor: pointer;
+          padding: 4px;
+          color: #666;
+          display: flex;
+          align-items: center;
+        }
+        .${this.config.toggleButtonClass}:hover {
+          color: #333;
+        }
+        .${this.config.toggleButtonClass}.${this.config.activeClass} {
+          color: #000;
+        }
+        .password-toggle-tooltip {
+          position: absolute;
+          top: -30px;
+          right: 0;
+          background: #1a2e3b;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .password-toggle-wrapper:hover .password-toggle-tooltip {
+          opacity: 1;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
   }
 
   setupPasswordFields() {
@@ -77,43 +139,92 @@ class PasswordToggle {
         console.warn('PasswordToggle: Field must be of type password or text');
         return;
       }
-      
-      // Add necessary ARIA attributes for accessibility
-      const modifierDisplay = this.isMac ? '⌘' : 'Ctrl';
-      field.setAttribute('aria-label', 
-        `${field.getAttribute('aria-label') || 'Password'} (Press ${modifierDisplay}+${this.keyConfig.key} to toggle visibility)`
-      );
+
+      // Wrap field if not already wrapped
+      if (!field.parentElement.classList.contains('password-toggle-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-toggle-wrapper';
+        field.parentNode.insertBefore(wrapper, field);
+        wrapper.appendChild(field);
+
+        if (this.config.showToggleButton) {
+          const button = this.createToggleButton();
+          wrapper.appendChild(button);
+          button.addEventListener('click', (e) => this.handleButtonClick(e, field));
+        }
+
+        this.createTooltip(field);
+      }
     });
   }
 
-  handleKeyPress(event) {
-    // Check if the pressed modifier key matches the configured one
-    if (event[this.keyConfig.modifier] && event.key === this.keyConfig.key) {
-      event.preventDefault();
+  handleButtonClick(event, field) {
+    event.preventDefault();
+    if (this.config.toggleAllFields) {
       this.togglePasswordVisibility();
+    } else {
+      this.togglePasswordVisibility(field);
     }
   }
 
-  togglePasswordVisibility() {
-    const fields = document.querySelectorAll(`[${this.config.toggleAttribute}]`);
+  handleKeyPress(event) {
+    if (event[this.keyConfig.modifier] && event.key === this.keyConfig.key) {
+      event.preventDefault();
+      if (this.config.toggleAllFields) {
+        this.togglePasswordVisibility();
+      } else {
+        const activeElement = document.activeElement;
+        if (activeElement?.hasAttribute(this.config.toggleAttribute)) {
+          this.togglePasswordVisibility(activeElement);
+        }
+      }
+    }
+  }
+
+  togglePasswordVisibility(specificField = null) {
+    const fields = specificField ? [specificField] : 
+      document.querySelectorAll(`[${this.config.toggleAttribute}]`);
+    
     fields.forEach(field => {
-      field.type = field.type === 'password' ? 'text' : 'password';
+      const wasPassword = field.type === 'password';
+      field.type = wasPassword ? 'text' : 'password';
       
-      // Update ARIA attributes
-      field.setAttribute('aria-pressed', field.type === 'text');
+      // Update button icon if exists
+      const button = field.parentElement.querySelector(`.${this.config.toggleButtonClass}`);
+      if (button) {
+        button.innerHTML = wasPassword ? this.config.eyeOpenIcon : this.config.eyeClosedIcon;
+        button.classList.toggle(this.config.activeClass, !wasPassword);
+      }
       
       // Dispatch custom event
       field.dispatchEvent(new CustomEvent('passwordToggle', {
+        bubbles: true,
         detail: { 
-          isVisible: field.type === 'text',
-          platform: this.isMac ? 'mac' : 'other'
+          isVisible: !wasPassword,
+          field: field.id || 'anonymous',
+          mode: this.config.toggleAllFields ? 'all' : 'focused'
         }
       }));
     });
   }
-  
+
+  // Public methods for dynamic configuration
+  setMode(mode) {
+    this.config.toggleAllFields = mode === 'all';
+    return this;
+  }
+
+  setKeyCombo(keyCombo) {
+    this.config.keyCombo = keyCombo;
+    this.keyConfig = this.parseKeyCombo(keyCombo);
+    return this;
+  }
+
   destroy() {
     document.removeEventListener('keydown', this.handleKeyPress);
+    document.querySelectorAll(`.${this.config.toggleButtonClass}`).forEach(button => {
+      button.removeEventListener('click', this.handleButtonClick);
+    });
   }
 }
 
