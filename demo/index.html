@@ -6,6 +6,9 @@
     <title>Password Toggle Example</title>
 </head>
 <body>
+    <h1>Password Toggle Demo</h1>
+    <p>Press Ctrl+8 (Windows/Linux) or ⌘+8 (Mac) to toggle password visibility</p>
+
     <form>
         <div>
             <label for="password1">Password:</label>
@@ -28,20 +31,22 @@
         </div>
     </form>
 
-    <script src="password-toggle.js"></script>
+    <script src="/password-toggle.js"></script>
     <script>
-        // Basic usage
-        const passwordToggle = new PasswordToggle();
-
-        // Custom configuration
-        const customPasswordToggle = new PasswordToggle({
-            keyCombo: 'alt+p',
-            toggleAttribute: 'data-custom-toggle'
-        });
-
-        // Listen for toggle events
-        document.querySelector('#password1').addEventListener('passwordToggle', (e) => {
-            console.log('Password visibility changed:', e.detail.isVisible);
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const passwordToggle = new PasswordToggle();
+                
+                // Add visual feedback
+                const fields = document.querySelectorAll('[data-pw-toggle]');
+                fields.forEach(field => {
+                    field.addEventListener('passwordToggle', (e) => {
+                        console.log('Password visibility changed:', e.detail.isVisible);
+                    });
+                });
+            } catch (error) {
+                console.error('Failed to initialize PasswordToggle:', error);
+            }
         });
     </script>
 </body>
