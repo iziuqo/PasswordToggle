@@ -1,9 +1,11 @@
 {
   "version": 2,
   "builds": [
+    { "src": "src/**/*", "use": "@vercel/static" },
     { "src": "demo/**/*", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/password-toggle.js", "dest": "/src/password-toggle.js" },
     { "src": "/(.*)", "dest": "/demo/$1" }
   ]
 }
