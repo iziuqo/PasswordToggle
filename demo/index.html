@@ -4,13 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Toggle Example</title>
+    <style>
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #e7f7e7;
+            color: #0a6b0a;
+        }
+        .status.error {
+            background-color: #fce8e8;
+            color: #8b0000;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
 </head>
 <body>
     <h1>Password Toggle Demo</h1>
-    <p>Press Ctrl+8 (Windows/Linux) or ⌘+8 (Mac) to toggle password visibility</p>
+    <div id="status" class="status"></div>
 
     <form>
-        <div>
+        <div class="form-group">
             <label for="password1">Password:</label>
             <input 
                 type="password" 
@@ -20,7 +48,7 @@
             >
         </div>
         
-        <div>
+        <div class="form-group">
             <label for="password2">Another Password:</label>
             <input 
                 type="password" 
@@ -34,8 +62,12 @@
     <script src="/password-toggle.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const statusEl = document.getElementById('status');
             try {
                 const passwordToggle = new PasswordToggle();
+                const platform = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘+8' : 'Ctrl+8';
+                statusEl.textContent = `✅ Initialized successfully! Press ${platform} to toggle password visibility`;
+                statusEl.className = 'status success';
                 
                 // Add visual feedback
                 const fields = document.querySelectorAll('[data-pw-toggle]');
@@ -46,6 +78,8 @@
                 });
             } catch (error) {
                 console.error('Failed to initialize PasswordToggle:', error);
+                statusEl.textContent = `❌ Error: ${error.message}`;
+                statusEl.className = 'status error';
             }
         });
     </script>
