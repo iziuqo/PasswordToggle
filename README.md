@@ -1,12 +1,12 @@
 # Password Toggle
 
-A lightweight, platform-agnostic JavaScript library for toggling password field visibility using keyboard shortcuts.
+A lightweight, platform-agnostic JavaScript library for toggling password field visibility using keyboard shortcuts. Automatically adapts to Mac (⌘) and Windows/Linux (Ctrl) keyboard shortcuts.
 
 ## Features
 
 - 🚀 Zero dependencies
 - 🌐 Works in all modern browsers
-- ⌨️ Customizable keyboard shortcuts
+- ⌨️ Platform-aware keyboard shortcuts (⌘ on Mac, Ctrl on Windows/Linux)
 - ♿ Accessible by default
 - 📱 Mobile-friendly
 - 🔌 Easy integration with existing projects
@@ -43,7 +43,7 @@ Download `password-toggle.js` from this repository and include it in your projec
 const passwordToggle = new PasswordToggle();
 ```
 
-That's it! Press Ctrl+8 to toggle password visibility.
+That's it! Press Ctrl+8 (Windows/Linux) or ⌘+8 (Mac) to toggle password visibility.
 
 ## Configuration
 
@@ -58,8 +58,12 @@ const passwordToggle = new PasswordToggle({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| keyCombo | string | 'ctrl+8' | Keyboard shortcut for toggling visibility |
+| keyCombo | string | 'ctrl+8' or 'cmd+8' | Keyboard shortcut for toggling visibility (platform-dependent) |
 | toggleAttribute | string | 'data-pw-toggle' | Data attribute to identify password fields |
+
+### Supported Modifier Keys
+- Windows/Linux: `ctrl`, `alt`, `shift`
+- Mac: `cmd` (or `command`), `ctrl`, `alt`, `shift`
 
 ### Events
 
@@ -68,6 +72,7 @@ Listen for visibility changes:
 ```javascript
 passwordField.addEventListener('passwordToggle', (e) => {
     console.log('Password visibility:', e.detail.isVisible);
+    console.log('Platform:', e.detail.platform); // 'mac' or 'other'
 });
 ```
 
@@ -81,12 +86,11 @@ passwordToggle.destroy();
 
 ## Browser Support
 
-- Chrome
-- Firefox
-- Safari
+- Chrome (Mac/Windows/Linux)
+- Firefox (Mac/Windows/Linux)
+- Safari (Mac/iOS)
 - Edge
 - Opera
-- Mobile browsers
 
 ## Contributing
 
