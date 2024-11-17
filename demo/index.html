@@ -3,102 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Toggle Demo</title>
+    <title>Password Toggle - Modern Form Controls</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --radius: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            background: var(--gray-50);
+            color: var(--gray-800);
         }
-        .section {
-            margin: 30px 0;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--gray-900);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 1rem 0 0;
+            color: var(--gray-600);
+            font-size: 1.125rem;
+        }
+
+        .config-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .config-panel h3 {
+            margin: 0 0 1rem;
+            color: var(--gray-900);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .config-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .config-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .config-button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-700);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .config-button:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+
+        .config-button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .config-button.active:hover {
+            background: var(--primary-dark);
+        }
+
+        .demo-section {
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .demo-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .demo-card h2 {
+            margin: 0 0 1.5rem;
+            color: var(--gray-900);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
         .form-group {
-            margin: 15px 0;
+            margin-bottom: 1.5rem;
+            width: 100%;
         }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
         label {
             display: block;
-            margin-bottom: 5px;
-            color: #333;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
+
         input {
-            padding: 8px 35px 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
             width: 100%;
-            font-size: 16px;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            color: var(--gray-900);
+            background: white;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
             box-sizing: border-box;
         }
+
+        input:hover {
+            border-color: var(--gray-300);
+        }
+
         input:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        .config-panel {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 20px 0;
+
+        .event-log {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--gray-100);
+            border-radius: var(--radius);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            max-height: 150px;
+            overflow-y: auto;
         }
-        .config-panel button {
-            margin: 0 5px;
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        .event-log p {
+            margin: 0.25rem 0;
+            line-height: 1.4;
+        }
+
+        .event-log .timestamp {
+            color: var(--gray-500);
+        }
+
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
             background: white;
-            cursor: pointer;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
         }
-        .config-panel button.active {
-            background: #2563eb;
-            color: white;
-            border-color: #2563eb;
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .footer-content svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.5;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: var(--primary-dark);
+        }
+
+        .coffee-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #FFDD00;
+            color: #000000;
+            border: none;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .coffee-button:hover {
+            background: #FFE344;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .coffee-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .coffee-icon {
+            position: relative;
+            display: inline-block;
+        }
+
+        .coffee-icon .steam-path {
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform-origin: bottom;
+            animation: steam 1s ease-in-out infinite;
+        }
+
+        @keyframes steam {
+            0% {
+                transform: translateY(0) translateX(-50%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10px) translateX(-50%);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .config-group {
+                flex-wrap: wrap;
+            }
+
+            .config-button {
+                flex: 1;
+                min-width: 120px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Password Toggle Demo</h1>
-    
-    <div class="config-panel">
-        <h3>Configuration</h3>
-        <div>
-            <button id="modeFocus" class="active">Focus Mode</button>
-            <button id="modeAll">Toggle All Mode</button>
-        </div>
-    </div>
+    <div class="container">
+        <header class="header">
+            <h1>Password Toggle</h1>
+            <p>A modern, accessible password visibility toggle for web forms</p>
+        </header>
 
-    <div class="section">
-        <h2>Password Fields</h2>
-        <form id="form1">
-            <div class="form-group">
-                <label for="password1">Password:</label>
-                <input 
-                    type="password" 
-                    id="password1" 
-                    data-pw-toggle 
-                    placeholder="Enter password"
-                >
+        <div class="config-panel">
+            <h3>Configuration</h3>
+            <div class="config-group">
+                <button id="modeFocus" class="config-button active">Focus Mode</button>
+                <button id="modeAll" class="config-button">Toggle All Mode</button>
+                <button id="shortcuts" class="config-button">
+                    <span id="shortcutText">Ctrl+8</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <div class="demo-card">
+                <h2>Sign In Form</h2>
+                <form id="form1">
+                    <div class="form-group">
+                        <label for="password1">Password</label>
+                        <input 
+                            type="password" 
+                            id="password1" 
+                            data-pw-toggle 
+                            placeholder="Enter your password"
+                        >
+                    </div>
+                </form>
+                <div id="eventLog1" class="event-log"></div>
+            </div>
+
+            <div class="demo-card">
+                <h2>Registration Form</h2>
+                <form id="form2">
+                    <div class="form-group">
+                        <label for="password2">Create Password</label>
+                        <input 
+                            type="password" 
+                            id="password2" 
+                            data-pw-toggle 
+                            placeholder="Create a strong password"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="password3">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="password3" 
+                            data-pw-toggle 
+                            placeholder="Confirm your password"
+                        >
+                    </div>
+                </form>
+                <div id="eventLog2" class="event-log"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path>
+                    <line x1="6" y1="2" x2="6" y2="4"></line>
+                    <line x1="10" y1="2" x2="10" y2="4"></line>
+                    <line x1="14" y1="2" x2="14" y2="4"></line>
+                </svg>
+                Made with ☕️ by 
+                <a href="https://github.com/izaiascrs" target="_blank" rel="noopener noreferrer">
+                    Izaias Cavalcanti
+                </a>
             </div>
             
-            <div class="form-group">
-                <label for="password2">Another Password:</label>
-                <input 
-                    type="password" 
-                    id="password2" 
-                    data-pw-toggle 
-                    placeholder="Enter password"
-                >
-            </div>
-        </form>
+            <a href="https://www.buymeacoffee.com/iziuqo" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="coffee-button">
+                <span class="coffee-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="steam-path">
+                        <path d="M6 8.5C6 8.5 7 7 9 7"></path>
+                        <path d="M10.5 8.5C10.5 8.5 11.5 7 13.5 7"></path>
+                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+                        <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path>
+                    </svg>
+                </span>
+                Buy me a coffee
+            </a>
+        </footer>
     </div>
 
     <script src="/password-toggle.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize with default settings
+            // Update shortcut text based on platform
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const shortcutText = document.getElementById('shortcutText');
+            shortcutText.textContent = isMac ? '⌘+8' : 'Ctrl+8';
+
+            // Initialize password toggle
             const passwordToggle = new PasswordToggle();
 
             // Mode switching
@@ -109,24 +424,44 @@
                 passwordToggle.setMode('focus');
                 modeFocusBtn.classList.add('active');
                 modeAllBtn.classList.remove('active');
+                logEvent('Switched to Focus Mode');
             });
 
             modeAllBtn.addEventListener('click', () => {
                 passwordToggle.setMode('all');
                 modeAllBtn.classList.add('active');
                 modeFocusBtn.classList.remove('active');
+                logEvent('Switched to Toggle All Mode');
             });
+
+            // Event logging
+            function logEvent(message, formId = 'all') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `<p><span class="timestamp">[${timestamp}]</span> ${message}</p>`;
+                
+                if (formId === 'all' || formId === '1') {
+                    const log1 = document.getElementById('eventLog1');
+                    log1.innerHTML = logEntry + log1.innerHTML;
+                }
+                if (formId === 'all' || formId === '2') {
+                    const log2 = document.getElementById('eventLog2');
+                    log2.innerHTML = logEntry + log2.innerHTML;
+                }
+            }
 
             // Event listening
             document.querySelectorAll('[data-pw-toggle]').forEach(field => {
                 field.addEventListener('passwordToggle', (e) => {
-                    console.log('Password visibility changed:', {
-                        field: e.target.id,
-                        isVisible: e.detail.isVisible,
-                        mode: e.detail.mode
-                    });
+                    const formId = field.closest('form').id.slice(-1);
+                    logEvent(
+                        `Password ${e.detail.isVisible ? 'shown' : 'hidden'} - ${field.id} (${e.detail.mode} mode)`,
+                        formId
+                    );
                 });
             });
+
+            // Initial log
+            logEvent('Password Toggle initialized');
         });
     </script>
 </body>
