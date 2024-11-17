@@ -1,10 +1,10 @@
 {
   "name": "password-toggle",
   "version": "1.0.0",
-  "description": "A lightweight, platform-agnostic JavaScript library for toggling password field visibility",
+  "description": "A lightweight, platform-agnostic JavaScript library for toggling password visibility",
   "main": "src/password-toggle.js",
   "scripts": {
-    "start": "npx serve demo"
+    "start": "npx serve"
   },
   "keywords": [
     "password",
@@ -13,8 +13,12 @@
     "javascript",
     "browser"
   ],
-  "author": "Your Name",
+  "author": "Izaias Cavalcanti",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/izaiascrs/password-toggle"
+  },
   "devDependencies": {
     "serve": "^14.2.1"
   }
