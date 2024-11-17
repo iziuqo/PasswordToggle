@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Toggle Example</title>
+    <title>Password Toggle Demo</title>
     <style>
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
-        .status.success {
-            background-color: #e7f7e7;
-            color: #0a6b0a;
-        }
-        .status.error {
-            background-color: #fce8e8;
-            color: #8b0000;
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
         }
         .form-group {
             margin: 15px 0;
@@ -24,63 +23,110 @@
         label {
             display: block;
             margin-bottom: 5px;
+            color: #333;
         }
         input {
-            padding: 8px;
-            border: 1px solid #ccc;
+            padding: 8px 35px 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+        .config-panel {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .config-panel button {
+            margin: 0 5px;
+            padding: 6px 12px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            width: 200px;
+            background: white;
+            cursor: pointer;
+        }
+        .config-panel button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
         }
     </style>
 </head>
 <body>
     <h1>Password Toggle Demo</h1>
-    <div id="status" class="status"></div>
+    
+    <div class="config-panel">
+        <h3>Configuration</h3>
+        <div>
+            <button id="modeFocus" class="active">Focus Mode</button>
+            <button id="modeAll">Toggle All Mode</button>
+        </div>
+    </div>
 
-    <form>
-        <div class="form-group">
-            <label for="password1">Password:</label>
-            <input 
-                type="password" 
-                id="password1" 
-                data-pw-toggle 
-                aria-label="Password field"
-            >
-        </div>
-        
-        <div class="form-group">
-            <label for="password2">Another Password:</label>
-            <input 
-                type="password" 
-                id="password2" 
-                data-pw-toggle 
-                aria-label="Another password field"
-            >
-        </div>
-    </form>
+    <div class="section">
+        <h2>Password Fields</h2>
+        <form id="form1">
+            <div class="form-group">
+                <label for="password1">Password:</label>
+                <input 
+                    type="password" 
+                    id="password1" 
+                    data-pw-toggle 
+                    placeholder="Enter password"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password2">Another Password:</label>
+                <input 
+                    type="password" 
+                    id="password2" 
+                    data-pw-toggle 
+                    placeholder="Enter password"
+                >
+            </div>
+        </form>
+    </div>
 
     <script src="/password-toggle.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const statusEl = document.getElementById('status');
-            try {
-                const passwordToggle = new PasswordToggle();
-                const platform = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? '⌘+8' : 'Ctrl+8';
-                statusEl.textContent = `✅ Initialized successfully! Press ${platform} to toggle password visibility`;
-                statusEl.className = 'status success';
-                
-                // Add visual feedback
-                const fields = document.querySelectorAll('[data-pw-toggle]');
-                fields.forEach(field => {
-                    field.addEventListener('passwordToggle', (e) => {
-                        console.log('Password visibility changed:', e.detail.isVisible);
+            // Initialize with default settings
+            const passwordToggle = new PasswordToggle();
+
+            // Mode switching
+            const modeFocusBtn = document.getElementById('modeFocus');
+            const modeAllBtn = document.getElementById('modeAll');
+
+            modeFocusBtn.addEventListener('click', () => {
+                passwordToggle.setMode('focus');
+                modeFocusBtn.classList.add('active');
+                modeAllBtn.classList.remove('active');
+            });
+
+            modeAllBtn.addEventListener('click', () => {
+                passwordToggle.setMode('all');
+                modeAllBtn.classList.add('active');
+                modeFocusBtn.classList.remove('active');
+            });
+
+            // Event listening
+            document.querySelectorAll('[data-pw-toggle]').forEach(field => {
+                field.addEventListener('passwordToggle', (e) => {
+                    console.log('Password visibility changed:', {
+                        field: e.target.id,
+                        isVisible: e.detail.isVisible,
+                        mode: e.detail.mode
                     });
                 });
-            } catch (error) {
-                console.error('Failed to initialize PasswordToggle:', error);
-                statusEl.textContent = `❌ Error: ${error.message}`;
-                statusEl.className = 'status error';
-            }
+            });
         });
     </script>
 </body>
